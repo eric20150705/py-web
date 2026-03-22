@@ -23,8 +23,6 @@ def butten():
 window = Tk()
 # 設定視窗標題
 window.title("2D遊戲")
-
-window.options_add("*Font", ("微軟正黑體 100"))
 ############################建立按鈕########################
 # 建立按鈕，當按鈕被按下時，會呼叫 butten 函數
 btn1 = Button(window, text="按我", command=butten)
