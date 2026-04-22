@@ -3,6 +3,7 @@ import requests
 import os
 import sys
 
+os.chdir(sys.path[0])
 #######################定義函數########################
 API_KEY = "892da2f13edf3c7f382637760e72d224"
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
@@ -37,7 +38,7 @@ if "weather" in into and "main" in into:
     print("圖示URL:", icon_url)
     icon_response = requests.get(icon_url)
     if icon_response.status_code == 200:
-        with open("weather_icon.png", "wb") as f:
+        with open("gugugaga.png", "wb") as f:
             f.write(icon_response.content)
         print("圖示已下載並保存為 weather_icon.png")
     else:
