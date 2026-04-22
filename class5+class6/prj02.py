@@ -6,10 +6,10 @@ import sys
 os.chdir(sys.path[0])
 #######################定義函數########################
 API_KEY = "892da2f13edf3c7f382637760e72d224"
-BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"
-UNITS = "metric"
-LANG = "zh_tw"
-ICON_URL = "http://openweathermap.org/img/wn/"
+BASE_URL = "https://api.openweathermap.org/data/2.5/weather?"  # 請求天氣資料的URL
+UNITS = "metric"  # 攝氏溫度
+LANG = "zh_tw"  # 中文顯示
+ICON_URL = "http://openweathermap.org/img/wn/"  # 請求天氣圖示的URL
 #######################主程式########################
 city_name = "taipei"
 send_url = (
@@ -40,7 +40,7 @@ if "weather" in into and "main" in into:
     if icon_response.status_code == 200:
         with open("gugugaga.png", "wb") as f:
             f.write(icon_response.content)
-        print("圖示已下載並保存為 weather_icon.png")
+        print("圖示已下載並保存")
     else:
         print("你是傻b嗎? 好像是吧......", icon_response.status_code)
 else:
