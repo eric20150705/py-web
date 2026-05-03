@@ -45,7 +45,9 @@ def get_weather():
     """獲取輸入城市的天氣資訊"""
     city = entry.get().strip()
     if not city:
-        messagebox.showwarning("警告", "你是傻b嗎？請輸入城市名稱！")
+        messagebox.showwarning(
+            "警告", "你是傻b嗎？好像是耶! 大家都說了要輸入城市了，你還不輸入？"
+        )
         return
 
     try:
