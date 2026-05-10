@@ -79,7 +79,8 @@ def get_weather():
         image_label.image = photo  # 保持參照，防止垃圆回收
 
     except requests.exceptions.RequestException as e:
-        messagebox.showerror("錯誤", f"無法連接到天氣API: {str(e)}")
+        # messagebox.showerror("錯誤", f"無法連接到天氣API: {str(e)}")
+        messagebox.showerror("錯誤", f"無法連接到天氣API: 大傻b，你的有問題嗎？")
     except KeyError:
         messagebox.showerror("錯誤", "城市未找到，請檢查城市名稱")
     except Exception as e:
