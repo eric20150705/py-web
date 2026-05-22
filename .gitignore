@@ -1,3 +1,7 @@
-class7/.env
-class9/.env
-class8/.env
+*.env
+*.mp4
+*.gif
+
+.idea/
+.vscode/
+__pycache__/
