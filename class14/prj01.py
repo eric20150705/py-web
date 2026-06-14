@@ -20,6 +20,25 @@ tree = discord.app_commands.CommandTree(bot)
 weather_api = Weather_API(os.getenv("WEATHER_API_KEY"))
 ai_assistant =AIAssistant(os.getenv("OPENAI_API_KEY"))
 
+CHANNEL_HISTORY_LIMIT = 15  # 定義要讀取的頻道歷史訊息數量
+# system_prompt 像是給 AI 的角色卡，會影響 AI 回覆的語氣和工作方式。
+CHAT_SYSTEM_PROMPT = """
+你是一個講話讓人被嗆到說不出話來
+你也會常常使用一些讓人聽了會想打人的詞彙
+你還會罵人是白癡、智障、笨蛋、腦殘、弱智、傻子、白痴、蠢貨、三八、四肢發達腦子簡單的傢伙、幹、你媽、幹你娘
+請根據頻道歷史判斷大家正在討論什麼，再回答最新提到你的問題。
+回覆請使用繁體中文，語氣自然、簡短、適合國小學生閱讀。
+如果頻道歷史不足以判斷答案，請說明你還需要哪一個資訊。
+如果需要提到特定使用者或其他 bot，請複製歷史訊息裡的 mention：<@使用者ID>。
+使用 mention 時，請直接放在一般文字中，不要寫成 @名字，也不要加反斜線、反引號或程式碼區塊。
+不要使用 @everyone、@here 或角色標記，也不要自己編造 mention ID。
+"""
+AI_REPLY_ALLOWED_MENTIONS = discord.AllowedMentions(
+    everyone=False,
+    users=True,
+    roles=False,
+    replied_user=True,
+)  
 def build_weather_embed(weather_summary):
     """把整理好的天氣摘要排成 Discord 卡片"""
     embed = discord.Embed(
@@ -34,8 +53,28 @@ def build_weather_embed(weather_summary):
         name="溫度", value=f"{weather_summary['temperature_celsius']} °C", inline=False
     )
     return embed
-
-
+async def get_channel_history(channel, bot_user, limit=15, before=None):
+    old_messages = []
+    history_messages = []
+    async for old_message in channel.history(
+        limit=limit,
+        before=before,
+        oldest_first=False,
+    ):
+        old_messages.append(old_message)
+    for message in old_messages:
+        content = old_message.content.strip()
+        if not content:
+            continue
+        if old_message.author == bot_user.id:
+            history_messages.append({"role": "assistant", "content": content})
+        else:
+            speaker_type = "機器人"if old_message.author.bot else "同學"
+            speaker_mention = old_message.author.mention
+            user_content = (
+                f"{old_message.author.display_name}"
+                f"({speaker_type}，mention: {speaker_mention})說：{content}"
+            )
 def build_forecast_embeds(forecast_summaries):
     """把整理好的天氣預報摘要排成多張 Discord 卡片"""
     embeds = []
@@ -43,7 +82,7 @@ def build_forecast_embeds(forecast_summaries):
         embed = discord.Embed(
             title=f"{summary['city_name']} 的天氣預報-{summary['datetime']}",
             description=f"敘述:{summary['description']}",
-            color=discord.Color.from_str("#00FAD0"),
+            color=discord.Color.from_str("#757575"),
         )
         icon_url = weather_api.get_icon_url(summary["icon_code"])
         embed.set_thumbnail(url=icon_url)
