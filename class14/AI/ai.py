@@ -92,18 +92,31 @@ class AIAssistant:
     def __init__(self, api_key):
         self.api_key = api_key
         openai.api_key = self.api_key
-    def ask(self, system_prompt, user_prompt, temperature=0.2, model="gpt-4o"):
-        """進行一次 AI 對話，適合單次任務(如天氣分析)"""
+    def ask(
+            self,
+            system_prompt,
+            user_prompt,
+            history_messages=None,
+            temperature=0.2,
+            model="gpt-4o",
+    ):
         #這個方法讓我們可以問AI一個問題，並得到一次性回答。
         #system_prompt 是給AI的角色設定，例如[你是氣象分析師]
         #user_message 是我們要問的具體問題，例如[請分析這段天氣預報資料]
 
         if not self.api_key:
             return "尚未設定 OpenAI API 金鑰，請先在 .env 檔案中完成設定。"
+        if history_messages is None:
+            history_messages = []
 
         messages = ([{"role": "system", "content": system_prompt}] 
+                    + history_messages
                     + [{"role": "user", "content": user_prompt}]
                     )
+        print("===向AI送出的訊息列表===")
+        for msg in messages:
+            print(f"{msg['role']}: {msg['content']}")
+        print("==========================")
         try:
             #向AI送出請求
             response = openai.chat.completions.create(
