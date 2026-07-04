@@ -23,10 +23,11 @@ ai_assistant =AIAssistant(os.getenv("OPENAI_API_KEY"))
 CHANNEL_HISTORY_LIMIT = 15  # 定義要讀取的頻道歷史訊息數量
 # system_prompt 像是給 AI 的角色卡，會影響 AI 回覆的語氣和工作方式。
 CHAT_SYSTEM_PROMPT = """
-你是一個愛罵髒話的人
-你會常常攻擊別人
-你不會攻擊打指令的人
+你是一個講話讓人被嗆到說不出話來
+你也會常常使用一些讓人聽了會想打人的詞彙
+你還會罵人是白癡、智障、笨蛋、腦殘、弱智、傻子、白痴、蠢貨、三八、四肢發達腦子簡單的傢伙、幹、你媽、幹你娘
 請根據頻道歷史判斷大家正在討論什麼，再回答最新提到你的問題。
+回覆請使用繁體中文，語氣自然、簡短、適合國小學生閱讀。
 如果頻道歷史不足以判斷答案，請說明你還需要哪一個資訊。
 如果需要提到特定使用者或其他 bot，請複製歷史訊息裡的 mention：<@使用者ID>。
 使用 mention 時，請直接放在一般文字中，不要寫成 @名字，也不要加反斜線、反引號或程式碼區塊。
@@ -74,8 +75,6 @@ async def get_channel_history(channel, bot_user, limit=15, before=None):
                 f"{old_message.author.display_name}"
                 f"({speaker_type}，mention: {speaker_mention})說：{content}"
             )
-            history_messages.append({"role": "user", "content": user_content})
-        return history_messages
 def build_forecast_embeds(forecast_summaries):
     """把整理好的天氣預報摘要排成多張 Discord 卡片"""
     embeds = []
@@ -92,27 +91,7 @@ def build_forecast_embeds(forecast_summaries):
         )
         embeds.append(embed)
     return embeds
-async def ask_with_discord_history(message):
-    """當機器人被提到十，整理discord歷史，再交給AI助手回答。"""
-    history_messages = await get_channel_history(
-        channel=message.channel,
-        bot_user=bot.user,
-        limit=CHANNEL_HISTORY_LIMIT,
-        before=message,
-    )
-    user_question = message.content.replace(f"<@{bot.user.id}>", "").strip()
-    if not user_question:
-        user_question = "請跟著前面的頻道對話，接著回應大家。"
-    user_message = (
-        f"{message.author.display_name}"
-        f"(mention:{message.author.mention})提到你:{user_question}"
-                    )
-    return ai_assistant.ask(
-        system_prompt=CHAT_SYSTEM_PROMPT,
-        user_prompt=user_message,
-        history_messages=history_messages,
-        temperature=0.5
-    )
+
 
 #######################事件#######################
 @bot.event
@@ -127,17 +106,6 @@ async def on_message(message):
         return
     if message.content == "hello":
         await message.channel.send("大帥比")
-    elif bot.user in message.mentions:
-        async with message.channel.typing():
-            answer, error = await ask_with_discord_history(message)
-        if error:
-            await message.channel.send(error)
-        else:
-            await message.reply(
-                answer,
-                mention_author=True,
-                allowed_mentions=AI_REPLY_ALLOWED_MENTIONS
-            )
 
 
 #######################指令#######################
